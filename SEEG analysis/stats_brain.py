@@ -66,16 +66,6 @@ for freq in freqs:
     
     print(pvalueK)
     print(pvalueZ)
-
-# for condition in conditions:
-
-#     df_melt = sub_df[sub_df.condition == condition]
-        
-#     model = ols('psd ~ C(fband)', data=df_melt).fit()
-#     anova_table = sm.stats.anova_lm(model, typ=2)
-    
-#     print('\n'+condition)
-#     print(anova_table)
     
 model = ols('psd ~ C(fband, Sum)*C(condition, Sum)', data=sub_df).fit()
 anova_table = sm.stats.anova_lm(model, typ=2)
