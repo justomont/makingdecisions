@@ -5,12 +5,7 @@ import ast
 import colorsys
 from copy import deepcopy
 from operator import itemgetter
-# from __future__ import division
-# from scipy.spatial import ConvexHull
-# from scipy.ndimage import generate_binary_structure, binary_dilation
 
-# from pip._internal import main as pipmain
-# pipmain(['install', 'scipy'])
 
 def anatomicREL(tag):
     region = ['Unknown',
@@ -151,23 +146,6 @@ def insideRES(nodeRAS):
     
     return inside_val
     
-    # bounds = [0,0,0,0,0,0]
-    # segmentation = getNode('Segmentation')
-    # segmentation.GetSegmentation().GetBounds(bounds) # bounding box in global RAS in the form (xmin,xmax, ymin,ymax, zmin,zmax)
-    # inside = 0
-    
-    # segmentLabelmapNode = slicer.vtkMRMLLabelMapVolumeNode()
-    
-    # resection = segmentation.GetSegmentation().GetNthSegment(0)
-    # resectionID = segmentation.GetSegmentation().GetNthSegmentID(0)
-    
-    # slicer.modules.segmentations.logic().ExportSegmentsToLabelmapNode(segmentation,resectionID,segmentLabelmapNode)
-    
-    # if ((nodeRAS[0] >= bounds[0]) and (nodeRAS[0] <= bounds[1])) and ((nodeRAS[1] >= bounds[2]) and (nodeRAS[1] <= bounds[3])) and ((nodeRAS[2] >= bounds[4]) and (nodeRAS[2] <= bounds[5])):
-    #     inside = 1
-        
-    # return inside
-    
 def distance2res(nodeRAS):
     
     step = 0.05
@@ -183,8 +161,6 @@ def distance2res(nodeRAS):
         com.SetInputData(pd)
         com.Update()
         center = com.GetCenter()
-        
-        # mod = round(np.sqrt( (center[0]-nodeRAS[0])**2 + (center[1]-nodeRAS[1])**2 + (center[2]-nodeRAS[2])**2 ))
         
         i = 1
         while searching:
@@ -233,8 +209,6 @@ def showNodes(selected,single=True,markup_list='onset'):
             pairs.append(pair.split('-'))
 
     # Select rulers
-    # listNodeID = "vtkMRMLAnnotationHierarchyNode2"
-    # annotationHierarchyNode = slicer.mrmlScene.GetNodeByID(listNodeID) # rulers
     annotationHierarchyNode = getNode('Ruler List') # rulers
     children = annotationHierarchyNode.GetNumberOfChildrenNodes() # number of rulers
     print(children)
@@ -253,14 +227,11 @@ def showNodes(selected,single=True,markup_list='onset'):
     
     # Initialize Onset list
     onset = [['Node','R','A','S','i','j','k','Anatomical Label','Anatomic Region']]
-    # onset = [['Node','R','A','S']]
-
     
     for ruler_index in range(children):
         annotation = annotationHierarchyNode.GetNthChildNode(ruler_index).GetAssociatedNode() # one ruler
         if annotation != None:
             name = annotation.GetName() # name of the ruler e.g. 'A'
-            # print('for electrode named ', name, 'in slicer, checking:\n')
             for label in labels: # for each possible node
                 if label in done_labels:
                     pass
@@ -283,7 +254,7 @@ def showNodes(selected,single=True,markup_list='onset'):
                             ras = pstart
                             point_Ijk = RAStoIJK(ras,volumeNode)
                             onset.append([letter+str(num),ras[0],ras[1],ras[2],point_Ijk[0],point_Ijk[1],point_Ijk[2],voxelArray[point_Ijk[2],point_Ijk[1],point_Ijk[0]],anatomicREL(voxelArray[point_Ijk[2],point_Ijk[1],point_Ijk[0]])])
-                            # onset.append([letter+str(num),ras[0],ras[1],ras[2]])
+                            
                             done_labels.append(letter+str(num))
                         else:
                             pstart = [0,0,0]
@@ -299,7 +270,7 @@ def showNodes(selected,single=True,markup_list='onset'):
                             ras = location
                             point_Ijk = RAStoIJK(ras,volumeNode)
                             onset.append([letter+str(num),ras[0],ras[1],ras[2],point_Ijk[0],point_Ijk[1],point_Ijk[2],voxelArray[point_Ijk[2],point_Ijk[1],point_Ijk[0]],anatomicREL(voxelArray[point_Ijk[2],point_Ijk[1],point_Ijk[0]])])
-                            # onset.append([letter+str(num),ras[0],ras[1],ras[2]])
+                            
                             done_labels.append(letter+str(num))
     return onset
 
@@ -320,11 +291,8 @@ def transformNodes(selected,transformation_name,single=True,markup_list='nodes')
             pairs.append(pair.split('-'))
 
     # Select rulers
-    # listNodeID = "vtkMRMLAnnotationHierarchyNode2"
-    # annotationHierarchyNode = slicer.mrmlScene.GetNodeByID(listNodeID) # rulers
     annotationHierarchyNode = getNode('Ruler List') # rulers
     children = annotationHierarchyNode.GetNumberOfChildrenNodes() # number of rulers
-    print(children)
     
     # Select the fiducials
     try:
@@ -341,7 +309,7 @@ def transformNodes(selected,transformation_name,single=True,markup_list='nodes')
         annotation = annotationHierarchyNode.GetNthChildNode(ruler_index).GetAssociatedNode() # one ruler
         if annotation != None:
             name = annotation.GetName() # name of the ruler e.g. 'A'
-            # print('for electrode named ', name, 'in slicer, checking:\n')
+            
             for label in labels: # for each possible node
                 if label in done_labels:
                     pass
@@ -365,7 +333,6 @@ def transformNodes(selected,transformation_name,single=True,markup_list='nodes')
                             mniToWorldTransformNode.GetTransformToWorld(worldToMniTransform)
                             mni=[0,0,0]
                             worldToMniTransform.TransformPoint(ras, mni)
-                            # onset.append([letter+str(num),ras[0],ras[1],ras[2],point_Ijk[0],point_Ijk[1],point_Ijk[2],voxelArray[point_Ijk[2],point_Ijk[1],point_Ijk[0]],anatomicREL(voxelArray[point_Ijk[2],point_Ijk[1],point_Ijk[0]]),insideRES(ras)])
                             onset.append([letter+str(num),mni[0],mni[1],mni[2]])
                             done_labels.append(letter+str(num))
                             
@@ -386,7 +353,6 @@ def transformNodes(selected,transformation_name,single=True,markup_list='nodes')
                             mniToWorldTransformNode.GetTransformToWorld(worldToMniTransform)
                             mni=[0,0,0]
                             worldToMniTransform.TransformPoint(ras, mni)
-                            # onset.append([letter+str(num),ras[0],ras[1],ras[2],point_Ijk[0],point_Ijk[1],point_Ijk[2],voxelArray[point_Ijk[2],point_Ijk[1],point_Ijk[0]],anatomicREL(voxelArray[point_Ijk[2],point_Ijk[1],point_Ijk[0]]),insideRES(ras)])
                             onset.append([letter+str(num),mni[0],mni[1],mni[2]])
                             done_labels.append(letter+str(num))
     return onset
@@ -432,11 +398,7 @@ def paintMap(condition,freq,task,side=None):
         reader = csv.reader(f)
         nodelist = list(reader)
     
-    for node in nodelist:
-        
-        # if float(node[3]) > 0.5:
-        
-            # node[3] = (float(node[3])-0.5)/0.5    
+    for node in nodelist:  
         
         if side:
             if side == 'R':
@@ -448,22 +410,3 @@ def paintMap(condition,freq,task,side=None):
         else:
             paintNode(node)
                     
-        
-
-# name=_
-# exec(open("/Volumes/GoogleDrive/Mi unidad/_TFG/Spred_vJ/code/SlicerSingle_v04.py").read(), globals())
-# mean_d, norm_d, onset = showNodes(nodes)
-       
-# "KARLA"
-# exec(open('G:/Shared drives/A&K/code/python/PAc/SlicerSingle_v04.py' ).read(), globals())
-# out = 'G:/Shared Drives/A&K/data/results/ALL/single_dist_allnodes/'
-# source = 'G:/Shared Drives/A&K/data/results/ALL/nodes/{}-ns.csv'.format(name)
-# AnRes(name,source,out)
-
-# selected = 
-# listNodeID = 
-# markup_list = 
-# showNodes(selected,listNodeID)
-
-
-
