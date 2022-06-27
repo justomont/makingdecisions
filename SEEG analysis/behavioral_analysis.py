@@ -78,7 +78,7 @@ def select_eyedata(trial,trial_n,etData,tmin,tmax,gaze_threshold):
         eyetracking data for a specific trial.
 
     '''
-    #PROBLEMA AQUÍ
+    
     #select eyedata for the trial
     global gazedata
     
@@ -121,13 +121,13 @@ def fraction_of_looking_time(gazedata, gaze_threshold, task):
 
 def remove_missed_trials(trials,etData):
    
-    # missed_list = []
-    # for index, trial in trials.iterrows():   
-    #     gazedata = select_eyedata(trial,index,etData,'et_looking_Start','et_trial_End',gaze_threshold=0)
-    #     R_fraction, L_fraction, missed = fraction_of_looking_time(gazedata, gaze_threshold=0)
-    #     missed_list.append(missed)
-    # trials['missed'] = missed_list
-    # trials = trials.drop(trials[trials['missed']>0.25].index).reset_index(drop=True)
+     missed_list = []
+     for index, trial in trials.iterrows():   
+         gazedata = select_eyedata(trial,index,etData,'et_looking_Start','et_trial_End',gaze_threshold=0)
+         R_fraction, L_fraction, missed = fraction_of_looking_time(gazedata, gaze_threshold=0)
+         missed_list.append(missed)
+     trials['missed'] = missed_list
+     trials = trials.drop(trials[trials['missed']>0.25].index).reset_index(drop=True)
    
     return(trials)
 
@@ -168,10 +168,6 @@ def plot_corr(trials_all,x_n,y_n,task,last_phase = False):
     corr, pvalue = spearmanr(trials_all[x_n],trials_all[y_n])    
     fig.text(0.25,0.75,"p =" + str(pvalue)+'\n corr = '+str(np.round(corr,3))) 
     plt.title(x_n+' vs '+y_n+' \n'+task+' task',fontsize=25)
-    
-    
-    # plt.plot(trials_all[x_n],trials_all[y_n],'.')
-    
     
     if last_phase == True and x_n == 'chosen_lt' :
         Y= trials_all[y_n] #the responses of the experiment
@@ -309,7 +305,6 @@ def get_food_data(fileDir,subj):
     trials['evidence_right'] = (trials['stimR_value'] - trials['stimL_value'])
     
     # Remove invalid trials (Missed fraction of looking time over 0.25)
-    # trials = remove_missed_trials(trials,etData)
     trials = remove_missed_trials(trials,etData)
 
     return(trials, etData)
@@ -390,7 +385,7 @@ def get_context_data(fileDir,subj):
     trials['evidence_right'] = (trials['stimR_value'] - trials['stimL_value'])
     
     # Remove invalid trials (Missed fraction of looking time over 0.25)
-    # trials = remove_missed_trials(trials,etData)
+    trials = remove_missed_trials(trials,etData)
 
     return(trials, etData)
  
@@ -416,12 +411,7 @@ def get_gambling_data(fileDir,subj):
     global trials
     global etData
     files_subject = [_ for _ in os.listdir(fileDir) if (_.endswith(r".hdf5") or _.endswith(r".xlsx")) and '0'+str(subj)+'_' in _]
-    # experiment_data = pd.read_csv(fileDir+[file for file in files_subject if file.endswith(r'.csv')][0])
-    # global psyData
-    # psyData = experiment_data.iloc[19:,:].reset_index()
-    # psyData = psyData.iloc[:-1,:].reset_index()
-    
-    
+
     experiment_data = pd.ExcelFile(fileDir+[file for file in files_subject if file.endswith(r'.xlsx')][0])
     trials_data_all = pd.read_excel(experiment_data, 'trials')
     psyData = trials_data_all.iloc[:-8,:].reset_index()
@@ -596,8 +586,7 @@ def get_gambling_data_H(fileDir,subj):
     trials['evidence_right'] = (trials['stimR_value'] - trials['stimL_value'])
     
     # Remove invalid trials (Missed fraction of looking time over 0.25)
-    # trials = remove_missed_trials(trials,etData)
-    
+    trials = remove_missed_trials(trials,etData)
 
     return(trials,etData)
        
@@ -948,12 +937,6 @@ class subject:
             fig, ax = plt.subplots(1, 1, figsize=(12, 8))
             ax.plot(x, y, 'ko', label='Data points')
             
-            #Confidence intervals
-            # z = 1.96
-            # conf_int = [[y[i]-z*(np.sqrt((y[i]*(1-y[i]))/total_number_trials[i])) for i in range(len(total_number_trials))],
-            #             [y[i]+z*(np.sqrt((y[i]*(1-y[i]))/total_number_trials[i])) for i in range(len(total_number_trials))]]
-            # conf_int = [[y[i]-conf_int[0][i] for i in range(len(y))],[conf_int[1][i]-y[i] for i in range(len(y))]]
-            # plt.errorbar(valuesRL,y,conf_int,marker='o',color = 'k',capsize = 6, linewidth=3)
             plt.plot(valuesRL,y,'k')
             plt.xlim(min(labels),max(labels))
             psycho_sem=[ sp.sem(trials.response[trials['evidence_right']==x]) for x in valuesRL]
@@ -970,8 +953,6 @@ class subject:
 
             mod = smf.glm(formula= 'n_response ~ evidence_right' , data= trials , family= sm.families.Binomial() )
             res = mod.fit()
-
-            # plt.figure(figsize=(6, 6), dpi=300)
 
             myx = np.linspace(min(trials['evidence_right']),max(trials['evidence_right']),100)
             line_fit=res.predict(pd.DataFrame({'evidence_right': myx}))
@@ -1020,13 +1001,7 @@ class subject:
       
             fig, ax = plt.subplots(1, 1, figsize=(12, 8))
             ax.plot(x, y, 'ko', label='Data points')
-            
-            #Confidence intervals
-            # z = 1.96
-            # conf_int = [[y[i]-z*(np.sqrt((y[i]*(1-y[i]))/total_number_trials[i])) for i in range(len(total_number_trials))],
-            #             [y[i]+z*(np.sqrt((y[i]*(1-y[i]))/total_number_trials[i])) for i in range(len(total_number_trials))]]
-            # conf_int = [[y[i]-conf_int[0][i] for i in range(len(y))],[conf_int[1][i]-y[i] for i in range(len(y))]]
-            # plt.errorbar(valuesRL,y,conf_int,marker='o',color = 'k',capsize = 6, linewidth=3)
+
             plt.plot(valuesRL,y,'k')
             plt.xlim(min(labels),max(labels))
             psycho_sem=[ sp.sem(trials.response[trials['binned']==x]) for x in valuesRL]
@@ -1034,17 +1009,13 @@ class subject:
             plt.fill_between(valuesRL, [sum(value) for value in zip(ratiosR, sems)], [valueA-valueB for valueA, valueB in zip(ratiosR, sems)],alpha=0.5,label = 'SEM')
             plt.hlines(0.5,-10,10,color = 'red',alpha = 0.5)
             plt.vlines(0,0,1,color = 'red',alpha = 0.5)
-        
-            
-            
+
             #Logistic fit
     
             trials['n_response'] = trials.response*1
     
             mod = smf.glm(formula= 'n_response ~ evidence_right' , data= trials , family= sm.families.Binomial() )
             res = mod.fit()
-    
-            # plt.figure(figsize=(6, 6), dpi=300)
     
             myx = np.linspace(min(trials['evidence_right']),max(trials['evidence_right']),100)
             line_fit=res.predict(pd.DataFrame({'evidence_right': myx}))
@@ -1126,13 +1097,7 @@ class subject:
   
         fig, ax = plt.subplots(1, 1, figsize=(12, 8))
         ax.plot(x, y, 'ko', label='Data points')
-        
-        #Confidence intervals
-        # z = 1.96
-        # conf_int = [[y[i]-z*(np.sqrt((y[i]*(1-y[i]))/total_number_trials[i])) for i in range(len(total_number_trials))],
-        #             [y[i]+z*(np.sqrt((y[i]*(1-y[i]))/total_number_trials[i])) for i in range(len(total_number_trials))]]
-        # conf_int = [[y[i]-conf_int[0][i] for i in range(len(y))],[conf_int[1][i]-y[i] for i in range(len(y))]]
-        # plt.errorbar(valuesRL,y,conf_int,marker='o',color = 'k',capsize = 6, linewidth=3)
+
         plt.plot(valuesRL,y,'k')
         plt.xlim(min(labels),max(labels))
         psycho_sem=[ sp.sem(trials.response[trials['binned']==x]) for x in valuesRL]
@@ -1140,17 +1105,13 @@ class subject:
         plt.fill_between(valuesRL, [sum(value) for value in zip(ratiosR, sems)], [valueA-valueB for valueA, valueB in zip(ratiosR, sems)],alpha=0.5,label = 'SEM')
         plt.hlines(0.5,-10,10,color = 'red',alpha = 0.5)
         plt.vlines(0,0,1,color = 'red',alpha = 0.5)
-    
-        
-        
+
         #Logistic fit
 
         trials['n_response'] = trials.response*1
 
         mod = smf.glm(formula= 'n_response ~ right_lt' , data= trials , family= sm.families.Binomial() )
         res = mod.fit()
-
-        # plt.figure(figsize=(6, 6), dpi=300)
 
         myx = np.linspace(min(trials['right_lt']),max(trials['right_lt']),100)
         line_fit=res.predict(pd.DataFrame({'right_lt': myx}))
@@ -1199,33 +1160,6 @@ class subject:
                 plt.axhline(y=-gaze_threshold, color='g',linestyle='--')
                 plt.axhline(y=-1+gaze_threshold, color='g',linestyle='--')
                 plt.show()   
-    # def plot_pupil_dilation(self):
-    #     etData = self.etData
-        
-    #     gaze_threshold = self.gaze_threshold
-    #     trials = self.trials
-
-    #     if self.task == 'gambling_hospital':
-    #         time_slots = [{'tmin':'et_both_offers_Start','tmax':'et_LaN_Start', 'phase': 'stimuli presentation'},
-    #                       {'tmin':'et_LaN_Start','tmax':'et_decision_Start', 'phase': 'LaN phase'}]
-    #     else:
-    #         time_slots = [{'tmin':self.tmin,'tmax':'et_LaN_Start', 'phase': 'stimuli presentation'},
-    #                       {'tmin':'et_LaN_Start','tmax':'et_decision_Start', 'phase': 'LaN/LaS phase'}]
-    #     for time_slot in time_slots:
-
-    #         trials_LaN = trials.drop(trials[trials['LaN']==1].index).reset_index(drop=True)
-    #         trials_LaS = trials.drop(trials[trials['LaN']==0].index).reset_index(drop=True)
-    #         pupil_mean = []
-    #         for index, trial in trials_LaN.iterrows():
-               
-    #             # select eyetracking data for the trial:  
-    #             gazedata = select_eyedata(trial,index,etData,time_slot['tmin'],time_slot['tmax'],gaze_threshold)
-                
-    #             pupil_mean.append(np.mean(gazedata['left_pupil_measure1']))
- 
-    #         trials['pupil_mean'] = pupil_mean
-        
-        
         
             
     def plot_fraction_of_looking_time(self, LaN = None, LaS = None, chosen_option=None, distribution=None):
@@ -1406,12 +1340,6 @@ class subject:
                 Chosen_lookingtime_R.append(trial_lookingtime_R)
                 Chosen_lookingtime_L.append(trial_lookingtime_L)
                 transitions_t.append(transitions_time)
-                
-
-                    
-                
-                
-                
             
             # Expand eye tracker data in cases where some signal is missed at the end (looking at the mouse
             maxlenR = max(set([len (item) for item in Chosen_lookingtime_R]))
@@ -1477,10 +1405,10 @@ class subject:
                 time_ticks = np.arange(0, 6+window_size, window_size)
                 plt.xticks(ticks= list(range(len(windows))), labels=time_ticks)
                 plt.axvline(x=3/window_size, color='g', alpha=0.5)
-            # if self.task == 'gambling':
-            #     time_ticks = np.arange(0, 6+window_size, window_size)
-            #     plt.xticks(ticks= list(range(len(windows))), labels=time_ticks)
-            #     plt.axvline(x=3/window_size, color='g', alpha=0.5)
+            if self.task == 'gambling':
+                time_ticks = np.arange(0, 6+window_size, window_size)
+                plt.xticks(ticks= list(range(len(windows))), labels=time_ticks)
+                plt.axvline(x=3/window_size, color='g', alpha=0.5)
     
             plt.xlim(0,len(windows)-1)
             plt.ylim(0,1)
@@ -1506,8 +1434,6 @@ class subject:
         fig = plt.figure()
         plt.plot(transitions_mean, label='transitions')
         plt.fill_between(list(range(len(transitions_mean))), transitions_mean+transitions_sem, transitions_mean-transitions_sem,alpha=0.5)
-        # plt.text(1, 0.1, r'$p-val = $'+str(round(S_t_test_pval,4)), fontsize = 12)
-        # plt.text(7, 0.1, r'$p-val = $'+str(round(O_t_test_pval,4)), fontsize = 12)
         fig.text(0.1, 0.9, 'Stimulation', fontsize = 12)
         fig.text(0.7, 0.9, 'Observation', fontsize = 12)           
         
@@ -1545,7 +1471,6 @@ class subject:
         plt.ylabel('n transitions')
         plt.grid(visible=True, alpha=0.5)
         plt.legend()
-        # plt.savefig('results/'+str(self.task)+'/Time_resolved_'+chosen_side+'_chosen_TASK_'+str(self.task)+'_Subject_'+str(self.subj)+'.jpg', dpi=300)
         plt.show()
         
         return(output)
@@ -1639,474 +1564,3 @@ class subject:
         
         
         return(list(trials['n_response']), list(trials['R_fraction']))
-
-
-
-
-### VARIABLES ###
-# Directory with the data
-fileDir_food = r"data_food/"
-fileDir_context = r"data_context/"
-fileDir_gamblingH = r"data_gambling_HOSPITAL/"
-
-fileDir = [fileDir_food,fileDir_gamblingH,fileDir_context]
-tasks = ['food','gambling']
-
-subjects_food = [1]
-subjects_gamblingH = [1,2,3,4]
-subjects_context = [1,2,4]
-
-subjects = [subjects_food,subjects_gamblingH,subjects_context]
-
-# ### RUN CODE ###
-
-# # ### FOR ALL TASKS AND ALL SUBJECTS
-# for t in range(len(tasks)):
-#     print('Computing '+tasks[t]+' task')
-#     trials_all = pd.DataFrame(columns = trials.keys())
-#     for subj in subjects[t]:
-#         print('Computing subject ',subj)
-#         subject_n = subject(fileDir[t],subj,tmin ='et_looking_Start', tmax = 'et_decision_Start')
-#         trials_all = trials_all.append(subject_n.trials)
-#         # subject_1.transitions()
-#         # subject_1.psychometric_curve()
-
-#     plot_corr(trials_all,'total_value','confidence',tasks[t])
-#     plot_corr(trials_all,'total_value','transitions',tasks[t])
-#     plot_corr(trials_all,'difficulty','confidence',tasks[t])
-#     plot_corr(trials_all,'difficulty','transitions',tasks[t])
-#     plot_corr(trials_all,'confidence','transitions',tasks[t])
-
-### FOR A PARTICULAR TASK AND ALL SUBJECTS
-t = 2
-if t == 0 or t == 2:
-    gaze_threshold = 0.2
-else:
-    gaze_threshold = 0.2
-trials_all = pd.DataFrame()
-for subj in subjects[t]:
-    print('Computing subject ',subj)
-    print(fileDir)
-    
-    if subj == 1:
-        subject_n = subject(fileDir[t],subj,tmin ='et_looking_Start', tmax = 'et_decision_Start',gaze_threshold=gaze_threshold)
-        print(len(trials))
-        trials_all = pd.DataFrame(columns = trials.keys())
-        trials_all = trials_all.append(subject_n.trials)
-        subject_n.psycho_justo()
-        # if t == 0 or t == 2:
-        #     subject_n.heatmap(section='presentation',chosen_option='left',LaN=True)
-        #     subject_n.heatmap(section='presentation',chosen_option='right',LaN=True)
-        #     subject_n.heatmap(section='observation',chosen_option='left',LaN=True)
-        #     subject_n.heatmap(section='observation',chosen_option='right',LaN=True)
-        #     subject_n.heatmap(section='decision',chosen_option='left',LaN=True)
-        #     subject_n.heatmap(section='decision',chosen_option='right',LaN=True)
-        # subject_n.time_resolved()
-    else:
-        subject_n = subject(fileDir[t],subj,tmin ='et_looking_Start', tmax = 'et_decision_Start',gaze_threshold=gaze_threshold)
-        print(len(trials))
-        trials_all = trials_all.append(subject_n.trials)
-        # subject_1.transitions()
-        subject_n.psycho_justo()
-        # subject_n.time_resolved()
-
-# plot_corr(trials_all,'total_value','confidence',tasks[t])
-# plot_corr(trials_all,'total_value','transitions',tasks[t])
-# plot_corr(trials_all,'difficulty','confidence',tasks[t])
-# plot_corr(trials_all,'difficulty','transitions',tasks[t])
-# plot_corr(trials_all,'confidence','transitions',tasks[t])
-# plot_corr(trials_all,'total_value','consistency',tasks[t])
-# plot_corr(trials_all,'transitions','confidence',tasks[t])
-# plot_corr(trials_all,'chosen_lt','confidence',tasks[t])
-# plot_corr(trials_all,'right_lt','response',tasks[t])
-
-# if t==0:
-#     plot_corr(trials_all,'confidence','consistency',tasks[t])
-
-
-
-
-
-### VARIABLES ###
-# # Directory with the data
-# fileDir_food = r"data_pilot_food/"
-# fileDir_gambling = r"data_pilot_gambling_HEALTHY/"
-# fileDir_context = r"data_pilot_context/"
-# fileDir_gamblingH = r"data_pilot_gambling_HOSPITAL/"
-
-# fileDir = [fileDir_food,fileDir_context,fileDir_gamblingH]
-# tasks = ['food','context','gambling']
-
-# subjects_food = [7,8]
-# subjects_gamblingH = [10,11,12]
-# subjects_context = [1,2,3,4]
-# subjects = [subjects_food,subjects_context,subjects_gamblingH]
-
-### RUN CODE ###
-
-### FOR ALL TASKS AND ALL SUBJECTS
-# for t in range(len(tasks)):
-#     print('Computing '+tasks[t]+' task')
-#     trials_all = pd.DataFrame()
-#     for subj in subjects[t]:
-#         print('Computing subject ',subj)
-#         subject_n = subject(fileDir[t],subj,tmin ='et_looking_Start', tmax = 'et_decision_Start')
-#         trials_all = trials_all.append(subject_n.trials)
-#         # subject_1.transitions()
-#         # subject_1.psychometric_curve()
-
-#     plot_corr(trials_all,'total_value','confidence',tasks[t])
-#     plot_corr(trials_all,'total_value','transitions',tasks[t])
-#     plot_corr(trials_all,'difficulty','confidence',tasks[t])
-#     plot_corr(trials_all,'difficulty','transitions',tasks[t])
-#     plot_corr(trials_all,'confidence','transitions',tasks[t])
-
-
-
-
-# subj = 1
-
-# subject = subject(fileDir_gambling_hospital,subj, gaze_threshold=0)
-# subject.looking_time_fit()
-
-# subject.time_resolved(window_size=0.5)
-
-# subject.heatmap(section='right',chosen_option='left')
-# subject.heatmap(section='left',chosen_option='left')
-# subject.heatmap(section='both',chosen_option='left')
-# subject.heatmap(section='observation',chosen_option='left')
-# subject.heatmap(section='decision',chosen_option='left')
-
-# subject.heatmaps(confidence=True)
-# subject.heatmaps(difficulty=True)
-
-
-
-
-### RUN CODE ###
-
-# # # CONTEXT
-# for subj in [1,2,3,4,5]:
-# # for subj in [5]:
-#     sub = subject(fileDir_context,subj, gaze_threshold=0.375)
-#     sub.looking_time_fit()
-#     subject_1.time_resolved(window_size=0.5)
-    # subject_1.heatmaps(confidence=True)
-    # subject_1.heatmap(section='presentation',chosen_option='left')
-    # subject_1.heatmap(section='presentation',chosen_option='right')
-    # subject_1.heatmap(section='observation',chosen_option='left')
-    # subject_1.heatmap(section='observation',chosen_option='right')
-    # subject_1.heatmap(section='decision',chosen_option='left')
-    # subject_1.heatmap(section='decision',chosen_option='right')
-
-    
-
-# # FOOD
-# for subj in [7,8]:
-#     subject_1 = subject(fileDir_food,subj, gaze_threshold=0.375)
-#     subject_1.time_resolved(window_size=0.5)
-#     subject_1.heatmaps(confidence=True)
-#     subject_1.heatmap(section='observation',chosen_option='right')
-#     # subject_1.plot_eyedata_trials()
-#     # subject_1.plot_fraction_of_looking_time(distribution=True)
-
-# # GAMBLING HOSPITAL 
-
-
-
-
-
-
-
-
-
-
-
-# responses = []
-# Rs = []
-
-# # # for subj in [5]:
-
-    
-
-
-# TR_subs =[]
-# # # for subj in [7,8]:
-# for subj in [1,2,3]:
-
-#     sub = subject(fileDir_gambling,subj, gaze_threshold=0.1)
-#     tr = sub.time_resolved(window_size=0.5,LaN=True,sliding = True)
-#     # tr = sub.time_resolved(window_size=0.5,LaS=True,sliding = True)
-#     # tr = sub.time_resolved(window_size=0.5,sliding = True)
-#     TR_subs.append(tr)
-#     # tr = sub.time_resolved(window_size=0.5,sliding=True,LaN=True)
-#     # tr = sub.time_resolved(window_size=0.5,sliding=True,LaS=True)
-#     # plt.imshow([[0,0],[0,0]])
- 
-
-    
-# lRcR = []
-# lLcR = []
-# for sub in TR_subs:
-#     lRcR.append(sub['Chosen_R']['looking_time_R'])
-#     lLcR.append(sub['Chosen_R']['looking_time_L'])
-    
-# lRcR_mean = np.nanmean(lRcR,axis=0)
-# lLcR_mean = np.nanmean(lLcR,axis=0)
-
-
-# # Mean and SEM of the fraction of looking times
-# lRcR_sem = np.nanstd(lRcR_mean, axis=0)/np.sqrt(len(lRcR_mean))
-# lLcR_sem = np.nanstd(lLcR_mean, axis=0)/np.sqrt(len(lLcR_mean))
-
-# # Split the distributions according to the phases
-# middle = int(len(lRcR_mean)/2)
-# first_half_R_mean = lRcR_mean[:middle]
-# second_half_R_mean = lRcR_mean[middle:]
-# first_half_L_mean = lRcR_mean[:middle]
-# second_half_L_mean = lRcR_mean[middle:]
-
-# # T-test
-# S_t_test_stat, S_t_test_pval = sp.ttest_ind([x for x in first_half_R_mean if np.isnan(x) == False] , [x for x in first_half_L_mean if np.isnan(x) == False])
-# O_t_test_stat, O_t_test_pval = sp.ttest_ind([x for x in second_half_R_mean if np.isnan(x) == False] , [x for x in second_half_L_mean if np.isnan(x) == False])
-
-
-# # plt.fill_between(list(range(len(Chosen_lookingtime_L_mean))), Chosen_lookingtime_L_mean+Chosen_lookingtime_L_sem, Chosen_lookingtime_L_mean-Chosen_lookingtime_L_sem,alpha=0.5)
-# # plt.fill_between(list(range(len(Chosen_lookingtime_R_mean))), Chosen_lookingtime_R_mean+Chosen_lookingtime_R_sem, Chosen_lookingtime_R_mean-Chosen_lookingtime_R_sem,alpha=0.5)
-# fig= plt.figure(dpi=300)
-# plt.plot(lLcR_mean,label='L')
-# plt.plot(lRcR_mean,label='R')
-# plt.fill_between(list(range(len(lLcR_mean))), lLcR_mean+lLcR_sem, lLcR_mean-lLcR_sem,alpha=0.5)
-# plt.fill_between(list(range(len(lRcR_mean))), lRcR_mean+lRcR_sem, lRcR_mean-lRcR_sem,alpha=0.5)
-# # plt.text(7, 0.8, 'LaN', fontsize = 12)
-# fig.text(0.1, 0.9, 'Stimulation', fontsize = 12)
-# fig.text(0.7, 0.9, 'Observation', fontsize = 12)
-
-# time_ticks = np.arange(0, 5.5, 0.5)
-# plt.xticks(ticks= list(range(len(time_ticks))), labels=time_ticks)
-# plt.axvline(x=3/0.5, color='g', alpha=0.5)
-
-# plt.xlim((0,10))
-# plt.ylim((0,1))
-
-# plt.grid()
-
-# plt.xlabel('Time [s]')
-# plt.ylabel('Fraction of looking time')
-
-# plt.legend()
-# plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# looking_times_R = []
-# looking_times_L = []
-# for index, trial in trials.iterrows():
-    
-#     gazedata = select_eyedata(trial, index,etData, 'et_LaN_Start', 'et_decision_Start',gaze_threshold=0.375)
-#     lt_R, lt_L = fraction_of_looking_time(gazedata,0.375,'food')
-#     looking_times_R.append(lt_R)
-#     looking_times_L.append(lt_L)
-    
-# trials['LT_R'] =  looking_times_R
-# trials['LT_L'] =  looking_times_L
-
-# looking_times = []
-# axis = []
-# for value in range(-10,11):
-    
-#     lt = (trials[trials.stimL_value == value].LT_L.mean() + trials[trials.stimR_value == value].LT_R.mean())/2
-#     looking_times.append(lt)
-#     axis.append(value)
-    
-    
-    
-    
-    
-    
-    
-    
-# for subj in [7,8]:
-    
-#     sub = subject(fileDir_food,subj, gaze_threshold=0.375)
-#     resp, R_frac = sub.looking_time_fit()
-    
-#     try:
-#         responses = responses + resp
-#         Rs = Rs + R_frac
-#     except:
-#         responses = resp
-#         Rs = R_frac
-        
-    
-# subs_RF = pd.DataFrame({'n_response':responses,
-#               'R_fraction':Rs})
-# subs_RF = subs_RF.dropna(axis=0).reset_index()
-
-# mod = smf.glm(formula= 'n_response ~ R_fraction' , data= subs_RF , family= sm.families.Binomial() )
-# res = mod.fit()
-
-# prediction = res.predict(subs_RF.R_fraction)
-# labelled_prediction = [int(x>=0.5) for x in prediction]
-# accuracy = round(np.sum(labelled_prediction == subs_RF.n_response)/len(subs_RF),3)
-# plt.plot(subs_RF.R_fraction,subs_RF.n_response,'o')
-
-# plt.figure(figsize=(6, 6), dpi=300)
-
-# Y= subs_RF.n_response 
-# X1=np.round(subs_RF.R_fraction,1)
-# nx = np.unique(X1)
-# mn=[np.mean(Y[X1==x]) for x in nx]
-# sem=[sp.sem(Y[X1==x]) for x in nx] 
-
-# plt.plot(nx,mn, color='slategrey',label='Mean')
-# # plt.plot(nx,mn, 'o',color='slategrey')
-# plt.fill_between(nx, np.array(mn)+np.array(sem), np.array(mn)-np.array(sem),alpha=0.5,color='lightsteelblue',label='SEM')
-
-# myx = np.linspace(0,1,100)
-# line_fit=res.predict(pd.DataFrame({'R_fraction': myx}))
-# plt.plot(myx,line_fit,'-',color='k', linewidth=3, label='Log Fit')
-
-# # plt.errorbar(nx,mn,yerr=sem, fmt="o", capsize=4, color='slategrey')
-
-# plt.text(0.6, 0.35, r'$\beta = $'+str(round(res.params.R_fraction,3)), fontsize = 12)
-# plt.text(0.6, 0.3, r'$p-value = $'+str(round(res.pvalues.R_fraction,3)), fontsize = 12)
-
-# plt.xlabel('Fraction of looking time [R]')
-# plt.ylabel('Probability of reporting right choice')
-# plt.title('\n'.join(wrap('Probability of reporting the right choice according to fraction of looking time to the right option',60)), fontsize=12)
-
-# plt.xlim((0,1))
-# plt.ylim((0,1))
-# plt.legend()
-# plt.grid(visible=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#     subject_1.heatmap(section='right',chosen_option='left')
-#     subject_1.heatmap(section='left',chosen_option='left')
-#     subject_1.heatmap(section='both',chosen_option='left')
-#     subject_1.heatmap(section='observation',chosen_option='left')
-#     subject_1.heatmap(section='decision',chosen_option='left')
-#     # subject_1.heatmaps(difficulty=True)
-    # subject_1.heatmap(section='observation',chosen_option='right')
-    
-    # subject_1.plot_fraction_of_looking_time(distribution=True)
-
-
-# subject_1.plot_fraction_of_looking_time(LaS=True, distribution=True)
-# subject_1.plot_fraction_of_looking_time(tmin='et_looking_Start', tmax='et_LaN_Start')
-# subject_1.plot_fraction_of_looking_time(tmin='et_LaN_Start', tmax='et_decision_Start', LaS=True)
-# subject_1.plot_fraction_of_looking_time(tmin='et_decision_Start', tmax='et_trial_End', LaS=True)
-
-# subject_1.plot_fraction_of_looking_time(LaN=True, distribution=True)
-# subject_1.plot_fraction_of_looking_time(tmin='et_LaN_Start', tmax='et_decision_Start', LaN=True)
-# subject_1.plot_fraction_of_looking_time(tmin='et_decision_Start', tmax='et_trial_End', LaN=True)
-
-# subject_1.heatmap()
-
-# subject_1.heatmap(section='presentation',chosen_option='right',LaN=True)
-# subject_1.heatmap(section='observation',chosen_option='right',LaN=True)
-# subject_1.heatmap(section='decision',chosen_option='right',LaN=True)
-
-# subject_1.heatmap(section='presentation',chosen_option='left',LaN=True)
-# subject_1.heatmap(section='observation',chosen_option='left',LaN=True)
-# subject_1.heatmap(section='decision',chosen_option='left',LaN=True)
-
-# subject_1.heatmap(section='presentation',chosen_option='right',LaS=True)
-# subject_1.heatmap(section='observation',chosen_option='right',LaS=True)
-# subject_1.heatmap(section='decision',chosen_option='right',LaS=True)
-
-# subject_1.heatmap(section='presentation',chosen_option='left',LaS=True)
-# subject_1.heatmap(section='observation',chosen_option='left',LaS=True)
-# subject_1.heatmap(section='decision',chosen_option='left',LaS=True)
-
-
-## DEBUG
-# etData = subject_1.etData
-# trials = subject.trials
-# subject_1.heatmap(section='right')
-# subject_1.heatmap(section='left')
-# subject_1.heatmap(section='both')
-# subject_1.heatmap(section='decision')
-
-# subject_1.heatmap(section='right',chosen_option='right')
-# subject_1.heatmap(section='left',chosen_option='right')
-# subject_1.heatmap(section='both',chosen_option='right')
-# subject_1.heatmap(section='decision',chosen_option='right')
-
-# subject_1.heatmap(section='right',chosen_option='left')
-# subject_1.heatmap(section='left',chosen_option='left')
-# subject_1.heatmap(section='both',chosen_option='left')
-# subject_1.heatmap(section='decision',chosen_option='left')
-
-# subject_1.plot_fraction_of_looking_time()
-# subject_1.plot_fraction_of_looking_time(tmin='et_both_offers_Start',tmax='et_decision_Start')
-
-# subject_1.plot_fraction_of_looking_time(tmin='et_decision_Start', tmax = 'et_trial_End')
-
-
-
-
-
-#     # Image presentation 
-#     accuracy = analize(trials,etData,'et_looking_Start','et_decision_Start', heatmap=True, chosen_option='right')
-#     accuracy = analize(trials,etData,'et_looking_Start','et_decision_Start', heatmap=True, chosen_option='left')
-#     print('  STIM accuracy: ', accuracy)
-    
-#     # Image presentation + LaN / LaS
-#     accuracy = analize(trials,etData,'et_looking_Start','et_trial_End')
-#     print('  STIM + LaN/LaS accuracy: ', accuracy)
-    
-#     # Image presentation + LaN
-#     accuracy = analize(trials,etData,'et_looking_Start','et_trial_End',LaN=True)
-#     print('  STIM + LaN accuracy: ', accuracy)
-    
-#     # Image presentation + LaS
-#     accuracy = analize(trials,etData,'et_looking_Start','et_trial_End',LaS=True)
-#     print('  STIM + LaS accuracy: ', accuracy)
-    
-#     # LaN / LaS
-#     accuracy = analize(trials,etData,'et_decision_Start','et_trial_End')
-#     print('  LaN/LaS accuracy: ', accuracy)
-    
-#     # LaN
-#     accuracy = analize(trials,etData,'et_decision_Start','et_trial_End', LaN=True, heatmap=True, chosen_option='right')
-#     accuracy = analize(trials,etData,'et_decision_Start','et_trial_End', LaN=True, heatmap=True, chosen_option='left')
-#     print('  LaN accuracy: ', accuracy)
-    
-#     # LaS
-#     accuracy = analize(trials,etData,'et_decision_Start','et_trial_End', LaS=True, heatmap=True, chosen_option='right')
-#     accuracy = analize(trials,etData,'et_decision_Start','et_trial_End', LaS=True, heatmap=True, chosen_option='left')
-#     print('  LaS accuracy: ', accuracy, '\n')
-
