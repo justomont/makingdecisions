@@ -43,12 +43,3 @@ for condition in conditions:
         with open(freq+'_'+condition+'.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerows(all_nodes)
-
-
-# 
-# for RAS_file in RAS_files:
-    
-
-# df = pd.read_csv('data.csv')
-
-# print(df.to_string()) 
